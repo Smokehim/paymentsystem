@@ -1,0 +1,25 @@
+users 
+id 
+name 
+email 
+phone 
+password 
+role 
+
+payment 
+id 
+bank 
+Paypal 
+Visa 
+mobile 
+electricity
+water 
+inernet 
+
+transction
+id 
+user_id 
+amount  
+currency
+ payment_method_id,
+        
