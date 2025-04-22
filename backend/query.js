@@ -22,6 +22,7 @@ db.connect((result, error)=>{
     }
 })
 
+
 app.get("/user", (req, res)=>{
     try {
         const sql = `SELECT * FROM Users`
@@ -225,6 +226,7 @@ app.get('/Wallets_id', (req,res)=>{
     }
 
 })
+//not yet done
 app.post("/post/Wallets",(req, res)=>{
     try {
         const { user_id, balance, currency } = req.body;
@@ -274,7 +276,97 @@ app.delete("/delete/:id", (req, res)=>{
         console.log("here is your result delete", result)
     })
 })
+//not yet done
+//banks
+app.get("/bank", (req, res)=>{
+    try {
+        const sql = `SELECT * FROM Banks`
+        db.query(sql, (error,result)=>{
+             if(error) return res.status(400).json({message: "not able to get Banks", error}); console.log("not able to get Banks", error)
+             res.status(200).json({message: "here is your result Banks", result});
+             console.log("here is your result Banks", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+})
+app.get('/banks_id', (req,res)=>{
+    try{
+        console.log("Here is your query:", req.query);
+        console.log("Here is your request params:", req.params);
+    
+        const { id } = req.body;
+    
+        if (!id) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+    
+        const sql = `SELECT * FROM Banks WHERE id = ?`;
+        db.query(sql, [id], (error, result) => {
+            if (error) {
+                console.log("Not able to get Banks", error);
+                return res.status(400).json({ message: "Not able to get Banks", error });
+            }
+            console.log("Here is your result Banks", result);
+            res.status(200).json({ message: "Here is your result Banks", result });
+        });
+    }catch(error){
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
 
+})
+
+app.post("/post/banks",(req, res)=>{
+    try {
+        const { name, account_number, swift_code, currency} = req.body;
+        const sql  = `INSERT INTO Banks (name, account_number, swift_code, currency) VALUES (?)`;
+        db.query(sql, [name, account_number, swift_code, currency], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to post banks", error}); console.log("not able to post paymentmethod", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "banks not found"})
+            res.status(200).json({message: "here is your result post banks", result});
+            console.log("here is your result banks", result)
+        })
+        
+    } catch (error) {
+        console.log("not able to connect to database", error)
+    }
+})
+app.put("/put/:id", (req, res)=>{
+    try {
+        const id = req.body.id
+        if(!id) return res.status(400).json({message: "id is required"})
+        const { name, account_number, swift_code, currency} =req.body
+        const sql = `UPDATE  SET Banks name = COALESCE( ?, name),
+        account_number = COALESCE (?, account_number ), 
+        swift_code = COALESCE (?, swift_code ),
+        currency = COALESCE (?, currency ),
+        WHERE id=?`
+         const values = [name, account_number, swift_code, currency, id]
+        db.query(sql, values, (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to update banks", error}); console.log("not able to update paymentmethod", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "banks not found"})
+            res.status(200).json({message: "here is your result put banks", result});
+            console.log("here is your result put banks", result)
+        })
+    } catch (error) {
+        console.log("not able to connect to database", error)
+    }
+   
+
+})
+app.delete("/delete/:id", (req, res)=>{
+    const id = req.body.id
+    const sql = `DELETE FROM Banks WHERE id = ?`
+    db.query(sql,[id], (error, result)=>{
+        if(error) return res.status(400).json({message: "not able to delete banks", error}); console.log("not able to delete user", error)
+        if(result.affectedRows === 0) return res.status(404).json({message: "user not found"})
+        res.status(200).json({message: "here is your result delete banks", result});
+        console.log("here is your result delete banks", result)
+    })
+})
 
 
 
@@ -367,11 +459,6 @@ db.query(database,(error, result)=>{
                 console.log("here is your water ", result)
             })
     })
-    
-    
-    
-
-   
    
 db.connect(()=>{
     const mobileMoneyProviders = `CREATE TABLE IF NOT EXISTS MobileMoneyProviders (
@@ -398,6 +485,24 @@ db.connect(()=>{
             console.log("here is your apikeyPayment ", result)
         })
 })
+db.connect(()=> {
+    const transaction = `CREATE TABLE IF NOT EXISTS transaction(id INT AUTO_INCREMENT PRIMARY KEY,  user_id INT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'USD',
+    payment_method_id INT NOT NULL,
+    reference VARCHAR(50) UNIQUE NOT NULL,
+    status ENUM('pending', 'completed', 'failed', 'reversed') DEFAULT 'pending',
+    fee DECIMAL(10,2) DEFAULT 0.00,
+    discount DECIMAL(10,2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (payment_method_id) REFERENCES PaymentMethod(id) ON DELETE CASCADE)`;
+    db.query(transaction, (error, result)=>{
+        if(error) return console.error("not able to create table transaction", error.message)
+        console.log("here is your Transaction ", result)
+    })
+})
+
 db.connect(()=>{
     const transctionDetails = `CREATE TABLE IF NOT EXISTS TransactionDetails (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -479,23 +584,6 @@ db.connect(()=>{
         if(error) return console.error("not able to create table Paypal", error.message)
         console.log("here is your Paypal ", result)
 
-    })
-})
-db.connect(()=> {
-    const transaction = `CREATE TABLE IF NOT EXISTS transaction(id INT AUTO_INCREMENT PRIMARY KEY,  user_id INT NOT NULL,
-    amount DECIMAL(15,2) NOT NULL,
-    currency VARCHAR(10) DEFAULT 'USD',
-    payment_method_id INT NOT NULL,
-    reference VARCHAR(50) UNIQUE NOT NULL,
-    status ENUM('pending', 'completed', 'failed', 'reversed') DEFAULT 'pending',
-    fee DECIMAL(10,2) DEFAULT 0.00,
-    discount DECIMAL(10,2) DEFAULT 0.00,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (payment_method_id) REFERENCES PaymentMethod(id) ON DELETE CASCADE)`;
-    db.query(transaction, (error, result)=>{
-        if(error) return console.error("not able to create table transaction", error.message)
-        console.log("here is your Transaction ", result)
     })
 })
 
