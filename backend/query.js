@@ -322,7 +322,7 @@ app.get('/banks_id', (req,res)=>{
 app.post("/post/banks",(req, res)=>{
     try {
         const { name, account_number, swift_code, currency} = req.body;
-        const sql  = `INSERT INTO Banks (name, account_number, swift_code, currency) VALUES (?)`;
+        const sql  = `INSERT INTO Banks (name, account_number, swift_code, currency) VALUES (?,?,?,?)`;
         db.query(sql, [name, account_number, swift_code, currency], (error, result)=>{
             if(error) return res.status(400).json({message: "not able to post banks", error}); console.log("not able to post paymentmethod", error)
             if(result.affectedRows === 0) return res.status(404).json({message: "banks not found"})
@@ -331,10 +331,11 @@ app.post("/post/banks",(req, res)=>{
         })
         
     } catch (error) {
+        res.status(500).json({message:""}, error)
         console.log("not able to connect to database", error)
     }
 })
-app.put("/put/:id", (req, res)=>{
+app.put("/put/bank", (req, res)=>{
     try {
         const id = req.body.id
         if(!id) return res.status(400).json({message: "id is required"})
@@ -358,20 +359,420 @@ app.put("/put/:id", (req, res)=>{
 
 })
 app.delete("/delete/:id", (req, res)=>{
-    const id = req.body.id
-    const sql = `DELETE FROM Banks WHERE id = ?`
-    db.query(sql,[id], (error, result)=>{
-        if(error) return res.status(400).json({message: "not able to delete banks", error}); console.log("not able to delete user", error)
-        if(result.affectedRows === 0) return res.status(404).json({message: "user not found"})
-        res.status(200).json({message: "here is your result delete banks", result});
-        console.log("here is your result delete banks", result)
-    })
+    try{
+        const id = req.body.id
+         const sql = `DELETE FROM Banks WHERE id = ?`
+        db.query(sql,[id], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to delete banks", error}); console.log("not able to delete user", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "user not found"})
+            res.status(200).json({message: "here is your result delete banks", result});
+            console.log("here is your result delete banks", result)
+        })
+    }catch(error){
+        res.status(500).json({message:""}, error)
+        console.log("not able to connect to database", error)
+    }
+    
+})
+//banks ends here
+app.get("/electrict", (req, res)=>{
+    try {
+        const sql = `SELECT * FROM ElectricityProviders`
+        db.query(sql, (error,result)=>{
+             if(error) return res.status(400).json({message: "not able to get ElectricityProviders", error}); console.log("not able to get Banks", error)
+             res.status(200).json({message: "here is your result ElectricityProviders", result});
+             console.log("here is your result ElectricityProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+})
+app.get('/ElectricityProviders_id', (req,res)=>{
+    try{
+        console.log("Here is your query:", req.query);
+        console.log("Here is your request params:", req.params);
+    
+        const { id } = req.body;
+    
+        if (!id) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+    
+        const sql = `SELECT * FROM ElectricityProviders WHERE id = ?`;
+        db.query(sql, [id], (error, result) => {
+            if (error) {
+                console.log("Not able to get ElectricityProviders", error);
+                return res.status(400).json({ message: "Not able to get ElectricityProviders", error });
+            }
+            console.log("Here is your result ElectricityProviders", result);
+            res.status(200).json({ message: "Here is your result ElectricityProvidersElectricityProviders", result });
+        });
+    }catch(error){
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+
 })
 
+app.post("/post/ElectricityProviders",(req, res)=>{
+    try {
+        const { name, provider_code} = req.body;
+        const sql  = `INSERT INTO ElectricityProviders (name, provider_code) VALUES (?,?)`;
+        db.query(sql, [name,provider_code], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to post ElectricityProviders", error}); console.log("not able to post ElectricityProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "ElectricityProviders not found"})
+            res.status(200).json({message: "here is your result post ElectricityProviders", result});
+            console.log("here is your result ElectricityProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message:""}, error)
+        console.log("not able to connect to database", error)
+    }
+})
+app.put("/put/ElectricityProviders ", (req, res)=>{
+    try {
+        const id = req.body.id
+        if(!id) return res.status(400).json({message: "id is required"})
+        const { name, provider_code} =req.body
+        const sql = `UPDATE  SET ElectricityProviders name = COALESCE( ?, name),
+        provider_code = COALESCE (?, provider_code ), 
+        WHERE id=?`
+         const values = [name,provider_code, id]
+        db.query(sql, values, (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to update ElectricityProviders ", error}); console.log("not able to update ElectricityProviders ", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "ElectricityProviders  not found"})
+            res.status(200).json({message: "here is your result put ElectricityProviders ", result});
+            console.log("here is your result put ElectricityProviders", result)
+        })
+    } catch (error) {
+        console.log("not able to connect to database", error)
+        res.status(500).json({message: "not abe to connect to database", })
+    }
+   
 
+})
+app.delete("/delete/ElectricityProviders_id", (req, res)=>{
+    try{
+        const id = req.body.id
+         const sql = `DELETE FROM ElectricityProviders  WHERE id = ?`
+        db.query(sql,[id], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to delete ElectricityProviders ", error}); console.log("not able to delete ElectricityProviders ", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "ElectricityProviders  not found"})
+            res.status(200).json({message: "here is your result delete ElectricityProviders ", result});
+            console.log("here is your result delete ElectricityProviders ", result)
+        })
+    }catch(error){
+        res.status(500).json({message:"not able to connect to database"}, error)
+        console.log("not able to connect to database", error)
+    }
+    
+})
 
+//electricty ends here
+app.get("/WaterProviders", (req, res)=>{
+    try {
+        const sql = `SELECT * FROM WaterProviders`
+        db.query(sql, (error,result)=>{
+             if(error) return res.status(400).json({message: "not able to get WaterProviders", error}); console.log("not able to get WaterProviders", error)
+             res.status(200).json({message: "here is your result WaterProviders", result});
+             console.log("here is your result WaterProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+})
+app.get('/WaterProviders_id', (req,res)=>{
+    try{
+        console.log("Here is your query:", req.query);
+        console.log("Here is your request params:", req.params);
+    
+        const { id } = req.body;
+    
+        if (!id) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+    
+        const sql = `SELECT * FROM WaterProviders WHERE id = ?`;
+        db.query(sql, [id], (error, result) => {
+            if (error) {
+                console.log("Not able to get WaterProviders", error);
+                return res.status(400).json({ message: "Not able to get WaterProviders", error });
+            }
+            console.log("Here is your result WaterProviders", result);
+            res.status(200).json({ message: "Here is your result WaterProviders", result });
+        });
+    }catch(error){
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
 
+})
 
+app.post("/post/WaterProviders",(req, res)=>{
+    try {
+        const { name, provider_code} = req.body;
+        const sql  = `INSERT INTO WaterProviders (name, provider_code) VALUES (?,?)`;
+        db.query(sql, [name,provider_code], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to post WaterProviders", error}); console.log("not able to post WaterProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "WaterProviders not found"})
+            res.status(200).json({message: "here is your result post WaterProviders", result});
+            console.log("here is your result WaterProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message:""}, error)
+        console.log("not able to connect to database", error)
+    }
+})
+app.put("/put/WaterProviders", (req, res)=>{
+    try {
+        const id = req.body.id
+        if(!id) return res.status(400).json({message: "id is required"})
+        const { name, provider_code} =req.body
+        const sql = `UPDATE  SET WaterProviders name = COALESCE( ?, name),
+        provider_code = COALESCE (?, provider_code ), 
+        WHERE id=?`
+         const values = [name,provider_code, id]
+        db.query(sql, values, (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to update WaterProviders ", error}); console.log("not able to update WaterProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "WaterProviders  not found"})
+            res.status(200).json({message: "here is your result put WaterProviders ", result});
+            console.log("here is your result put WaterProviders", result)
+        })
+    } catch (error) {
+        console.log("not able to connect to database", error)
+        res.status(500).json({message: "not abe to connect to database", })
+    }
+   
+
+})
+app.delete("/delete/WaterProviders_id", (req, res)=>{
+    try{
+        const id = req.body.id
+         const sql = `DELETE FROM WaterProviders  WHERE id = ?`
+        db.query(sql,[id], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to delete WaterProviders ", error}); console.log("not able to delete WaterProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "WaterProviders  not found"})
+            res.status(200).json({message: "here is your result delete WaterProviders ", result});
+            console.log("here is your result delete WaterProviders", result)
+        })
+    }catch(error){
+        res.status(500).json({message:"not able to connect to database"}, error)
+        console.log("not able to connect to database", error)
+    }
+    
+})
+
+//water ends here 
+
+app.get("/MobileMoneyProviders", (req, res)=>{
+    try {
+        const sql = `SELECT * FROM MobileMoneyProviders`
+        db.query(sql, (error,result)=>{
+             if(error) return res.status(400).json({message: "not able to get MobileMoneyProviders", error}); console.log("not able to get MobileMoneyProviders", error)
+             res.status(200).json({message: "here is your result MobileMoneyProviders", result});
+             console.log("here is your result MobileMoneyProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+})
+app.get('/MobileMoneyProviders_id', (req,res)=>{
+    try{
+        console.log("Here is your query:", req.query);
+        console.log("Here is your request params:", req.params);
+    
+        const { id } = req.body;
+    
+        if (!id) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+    
+        const sql = `SELECT * FROM MobileMoneyProviders WHERE id = ?`;
+        db.query(sql, [id], (error, result) => {
+            if (error) {
+                console.log("Not able to get MobileMoneyProviders", error);
+                return res.status(400).json({ message: "Not able to get MobileMoneyProviders", error });
+            }
+            console.log("Here is your result MobileMoneyProviders", result);
+            res.status(200).json({ message: "Here is your result MobileMoneyProviders", result });
+        });
+    }catch(error){
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+
+})
+
+app.post("/post/MobileMoneyProviders",(req, res)=>{
+    try {
+        const { name, provider_code} = req.body;
+        const sql  = `INSERT INTO MobileMoneyProviders (name, provider_code) VALUES (?,?)`;
+        db.query(sql, [name,provider_code], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to post MobileMoneyProviders", error}); console.log("not able to post MobileMoneyProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "MobileMoneyProviders not found"})
+            res.status(200).json({message: "here is your result post MobileMoneyProviders", result});
+            console.log("here is your result MobileMoneyProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message:""}, error)
+        console.log("not able to connect to database", error)
+    }
+})
+app.put("/put/MobileMoneyProviders", (req, res)=>{
+    try {
+        const id = req.body.id
+        if(!id) return res.status(400).json({message: "id is required"})
+        const { name, provider_code} =req.body
+        const sql = `UPDATE  SET MobileMoneyProviders name = COALESCE( ?, name),
+        provider_code = COALESCE (?, provider_code ), 
+        WHERE id=?`
+         const values = [name,provider_code, id]
+        db.query(sql, values, (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to update MobileMoneyProviders ", error}); console.log("not able to update MobileMoneyProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "MobileMoneyProviders  not found"})
+            res.status(200).json({message: "here is your result put MobileMoneyProviders ", result});
+            console.log("here is your result put MobileMoneyProviders", result)
+        })
+    } catch (error) {
+        console.log("not able to connect to database", error)
+        res.status(500).json({message: "not abe to connect to database", })
+    }
+   
+
+})
+app.delete("/delete/MobileMoneyProviders_id", (req, res)=>{
+    try{
+        const id = req.body.id
+         const sql = `DELETE FROM MobileMoneyProviders  WHERE id = ?`
+        db.query(sql,[id], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to delete MobileMoneyProviders ", error}); console.log("not able to delete MobileMoneyProviders", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "MobileMoneyProviders not found"})
+            res.status(200).json({message: "here is your result delete MobileMoneyProviders ", result});
+            console.log("here is your result delete MobileMoneyProviders", result)
+        })
+    }catch(error){
+        res.status(500).json({message:"not able to connect to database"}, error)
+        console.log("not able to connect to database", error)
+    }
+    
+})
+//mobilemoneyProvides
+app.get("/MobileMoneyProviders", (req, res)=>{
+    try {
+        const sql = `SELECT * FROM MobileMoneyProviders`
+        db.query(sql, (error,result)=>{
+             if(error) return res.status(400).json({message: "not able to get MobileMoneyProviders", error}); console.log("not able to get MobileMoneyProviders", error)
+             res.status(200).json({message: "here is your result MobileMoneyProviders", result});
+             console.log("here is your result MobileMoneyProviders", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+})
+app.get('/MobileMoneyProviders_id', (req,res)=>{
+    try{
+        console.log("Here is your query:", req.query);
+        console.log("Here is your request params:", req.params);
+    
+        const { id } = req.body;
+    
+        if (!id) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+    
+        const sql = `SELECT * FROM APIKeys WHERE id = ?`;
+        db.query(sql, [id], (error, result) => {
+            if (error) {
+                console.log("Not able to get APIKeys", error);
+                return res.status(400).json({ message: "Not able to get APIKeys", error });
+            }
+            console.log("Here is your result APIKeys", result);
+            res.status(200).json({ message: "Here is your result APIKeys", result });
+        });
+    }catch(error){
+        res.status(500).json({message: "not able to connect to database", error});
+        console.log("not able to connect to database", error)
+    }
+
+})
+
+app.post("/post/APIKeys",(req, res)=>{
+    try {
+        const { api_key, user_id, status} = req.body;
+        const sql  = `INSERT INTO APIKeys (api_key, user_id, status) VALUES (?,?)`;
+        db.query(sql, [api_key, user_id, status], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to post APIKeys", error}); console.log("not able to post APIKeys", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "APIKeys not found"})
+            res.status(200).json({message: "here is your result post APIKeys", result});
+            console.log("here is your result APIKeys", result)
+        })
+        
+    } catch (error) {
+        res.status(500).json({message:""}, error)
+        console.log("not able to connect to database", error)
+    }
+})
+app.put("/put/APIKeys", (req, res)=>{
+    try {
+        const user_id = req.body.user_id
+        if(!user_id) return res.status(400).json({message: "id is required"})
+        const values = [ user_id]
+        const mysql = `SELECT * FROM Users WHERE id =?`
+         db.query(mysql, values, (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to update MobileMoneyProviders ", error}); console.log("not able get user_id", error)
+            res.status(200).json({message: "here is the useid ", result});
+         
+            const {status, api_key} =req.body
+            const values = [ status, api_key, id]
+            const id = req.body.id
+            if(!id) return res.status(400).json({message: "id is required"})
+            const sql = `UPDATE  SET APIKeys api_key = COALESCE( ?, api_key),
+        status = COALESCE (?, status ),
+        WHERE id=?`
+            db.query(sql, values, (error, result)=>{
+                if(error) return res.status(400).json({message: "not able to update MobileMoneyProviders ", error}); console.log("not able to update MobileMoneyProviders", error)
+                if(result.affectedRows === 0) return res.status(404).json({message: "MobileMoneyProviders  not found"})
+                res.status(200).json({message: "here is your result put MobileMoneyProviders ", result});
+                console.log("here is your result put MobileMoneyProviders", result)
+            })
+
+        })
+       
+    } catch (error) {
+        console.log("not able to connect to database", error)
+        res.status(500).json({message: "not abe to connect to database", })
+    }
+   
+
+})
+app.delete("/delete/APIKeys_id", (req, res)=>{
+    try{
+        const id = req.body.id
+         const sql = `DELETE FROM APIKeys  WHERE id = ?`
+        db.query(sql,[id], (error, result)=>{
+            if(error) return res.status(400).json({message: "not able to delete APIKeys ", error}); console.log("not able to delete APIKeys", error)
+            if(result.affectedRows === 0) return res.status(404).json({message: "APIKeys not found"})
+            res.status(200).json({message: "here is your result delete APIKeys ", result});
+            console.log("here is your result delete APIKeys", result)
+        })
+    }catch(error){
+        res.status(500).json({message:"not able to connect to database"}, error)
+        console.log("not able to connect to database", error)
+    }
+    
+})
+//apikeypayment
 
 
 
@@ -396,6 +797,8 @@ db.query(database,(error, result)=>{
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(255) UNIQUE NOT NULL,
     NRC_Number VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     role ENUM('admin', 'merchant', 'customer')  DEFAULT 'customer',
     password VARCHAR(255) NOT NULL)`;
        db.query(user, (error, result)=>{
@@ -588,13 +991,13 @@ db.connect(()=>{
 })
 
     
-db.connect(()=>{
-    const sql =`ALTER TABLE users 
-     ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
-    db.query(sql, (error, result)=>{
-        if(error) return console.error("not able to alter table", error.message)
-        console.log("here is your result", result)
-    })
- })
+// db.connect(()=>{
+//     const sql =`ALTER TABLE users 
+//      ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//       ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`
+//     db.query(sql, (error, result)=>{
+//         if(error) return console.error("not able to alter table", error.message)
+//         console.log("here is your result", result)
+//     })
+//  })
 
